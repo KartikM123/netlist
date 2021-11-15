@@ -1,4 +1,5 @@
 import sys, getopt
+from datetime import datetime
 from commands.ICommand import ICommand
 from utils.userInfoUtils import UserInfo
 import json
@@ -20,9 +21,14 @@ class AddCommand(ICommand):
         return
     def saveUserInfo(self, userInfo):
         with open('db/network.json', 'r+') as outfile:
+            #load fileData
             file_data = json.load(outfile)
+            #serialize our new userInfo object
+            newObj = userInfo.serialize()
+            newObj["timeAdded"] = str(datetime.now())
+            newObj["timePinged"] = str(datetime.now())
             # Join new_data with file_data inside emp_details
-            file_data["network"].append(userInfo.serialize())
+            file_data["network"].append(newObj)
             #reset seek so it will overwrite at base index
             outfile.seek(0)
             # convert back to json.
