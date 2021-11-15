@@ -1,5 +1,6 @@
 import sys, getopt
 from commands.AddCommand import AddCommand
+from commands.ReadCommand import ReadCommand
 
 def main (argc, argv):
     if (argc == 0):
@@ -10,9 +11,13 @@ def main (argc, argv):
     except:
         print("error")
         return 1
-    if (args[0] == "add"):
+    target = args[0]
+    command = ReadCommand(args, opts)
+    if (target == "add"):
         command = AddCommand(args, opts)
-        command.execute()
+    elif(target == "read"):
+        command = ReadCommand(args, opts)
+    command.execute()
     return
 
 if __name__ == "__main__":
