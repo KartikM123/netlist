@@ -3,6 +3,7 @@ class UserInfo(object):
         self.name = ""
         self.info = ""
         self.email = ""
+        self.timePinged = ""
     def serialize(self):
         obj = {}
         obj["name"] = self.name

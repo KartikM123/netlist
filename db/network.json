@@ -1,1 +1,1 @@
-{"network": [{"info": "as", "name": "a", "email": "s"}, {"info": "a", "name": "s", "email": "s"}]}
+{"network": [{"info": "a", "timeAdded": "Mon Nov 15 19:10:29 2021", "name": "s", "timePinged": "Mon Nov 15 19:10:29 2021", "email": "s"}, {"info": "s", "timeAdded": "Mon Nov 15 19:10:31 2021", "name": "f", "timePinged": "Mon Nov 15 19:10:31 2021", "email": ""}, {"info": "asdf", "timeAdded": "Mon Nov 15 19:10:54 2021", "name": "as", "timePinged": "Mon Nov 15 19:10:54 2021", "email": "sdf"}]}
