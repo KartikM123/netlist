@@ -36,5 +36,5 @@ class PingCommand(ICommand):
             json.dump(file_data, outfile)
     def execute(self):
         name = self.getTargetName()
-        userInfo = self.pingUser(name)
+        self.pingUser(name)
 
