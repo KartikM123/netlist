@@ -86,8 +86,6 @@ class SearchCommand(ICommand):
         for i in range(1,x):
             for j in range(1,y):
                 lev[i][j] = self.calcEntryLev(lev, i, j, x, y, search, test)
-        if (test == "s"):
-            print lev
         return lev[x-1][y-1]
     #utils
     def calcSimilarity(self, search, test):
