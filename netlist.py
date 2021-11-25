@@ -3,6 +3,7 @@ from commands.AddCommand import AddCommand
 from commands.ListCommand import ListCommand
 from commands.ReadCommand import ReadCommand
 from commands.PingCommand import PingCommand
+from commands.SearchCommand import SearchCommand
 
 def main (argc, argv):
     if (argc == 0):
@@ -23,6 +24,8 @@ def main (argc, argv):
         command = ReadCommand(args, opts)
     elif(target == "ping"):
         command = PingCommand(args, opts)
+    elif(target == "search"):
+        command = SearchCommand(args, opts)
     command.execute()
     return
 

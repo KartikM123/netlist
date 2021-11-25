@@ -2,6 +2,7 @@ import sys, getopt
 from datetime import datetime
 from commands.ICommand import ICommand, format
 from utils.userInfoUtils import UserInfo
+from SearchCommand import SearchCommand
 import json
 
 class PingCommand(ICommand):
@@ -17,11 +18,8 @@ class PingCommand(ICommand):
             return True
     def getTargetName(self):
         newName = ""
-        while (newName=="" or self.isUniqueName(newName)):
-            newName = raw_input("Enter name of user: ")
-            if (self.isUniqueName(newName)):
-                print("please enter a valid username")
-        return newName
+        search = SearchCommand([],[])
+        return search.execute()
     def pingUser(self, name):
         with open('db/network.json', 'r+') as outfile:
             #load fileData
@@ -36,5 +34,5 @@ class PingCommand(ICommand):
             json.dump(file_data, outfile)
     def execute(self):
         name = self.getTargetName()
-        userInfo = self.pingUser(name)
+        self.pingUser(name)
 
