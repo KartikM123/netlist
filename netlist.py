@@ -1,5 +1,6 @@
 import sys, getopt
 from commands.AddCommand import AddCommand
+from commands.ListCommand import ListCommand
 from commands.ReadCommand import ReadCommand
 
 def main (argc, argv):
@@ -12,9 +13,11 @@ def main (argc, argv):
         print("error")
         return 1
     target = args[0]
-    command = ReadCommand(args, opts)
+    command = ListCommand(args, opts)
     if (target == "add"):
         command = AddCommand(args, opts)
+    elif(target == "list"):
+        command = ListCommand(args, opts)
     elif(target == "read"):
         command = ReadCommand(args, opts)
     command.execute()
