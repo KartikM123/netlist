@@ -22,7 +22,7 @@ class ListCommand(ICommand):
         return data
     def prettyPrint(self, data):
         for obj in data:
-            print(obj["name"] + " : " + obj["timeSinceLastPinged"])
+            print(obj["name"] + " : " +  obj["timeSinceLastPinged"])
     def execute(self):
         fileData = self.readData()
         fileData = self.calcTimeSincePinged(fileData)
