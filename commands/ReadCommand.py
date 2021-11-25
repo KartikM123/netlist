@@ -1,29 +1,41 @@
-from commands.ICommand import ICommand, format
-import json
+import sys, getopt
 from datetime import datetime
+from commands.ICommand import ICommand, format
+from utils.userInfoUtils import UserInfo
+import json
+
 class ReadCommand(ICommand):
     def __init__(self, args, opts):
-        pass
-    def readData(self):
+        self.args = args
+        self.opts = opts
+    def isUniqueName(self, name):
         with open('db/network.json', 'r+') as outfile:
-            #load fileData
             file_data = json.load(outfile)
-            return file_data["network"]
-    def calcTimeSincePinged(self, data):
-        newArr = []
-        for user in data:
-            timePinged = user["timePinged"]
-            nowTime = str(datetime.now().strftime(format))
-            user["timeSinceLastPinged"] = str(datetime.strptime(nowTime, format) - datetime.strptime(timePinged, format))
-            newArr.append(user)
-        return newArr
-    def sortTime(self, data):
-        print(data.sort(key=lambda x: x["timeSinceLastPinged"], reverse=True))
-        return data
-    def prettyPrint(self, data):
-        for obj in data:
-            print(obj["name"] + " : " + obj["timeSinceLastPinged"])
+            for obj in file_data["network"]:
+                if (obj["name"] == name):
+                    return False
+            return True
+    def getTargetName(self):
+        newName = ""
+        while (newName=="" or self.isUniqueName(newName)):
+            newName = raw_input("Enter name of user: ")
+            if (self.isUniqueName(newName)):
+                print("please enter a valid username")
+        return newName
+    def getUserInfoFromTarget(self, name):
+        with open('db/network.json', 'r+') as outfile:
+            file_data = json.load(outfile)
+            for obj in file_data["network"]:
+                if (obj["name"] == name):
+                    return obj
+            return
+    def printUserInfo(self, userInfo):
+        print("name:", str(userInfo["name"]))
+        print("info:", str(userInfo["info"]))
+        print("email:", str(userInfo["email"]))
+        return
     def execute(self):
-        fileData = self.readData()
-        fileData = self.calcTimeSincePinged(fileData)
-        self.prettyPrint(self.sortTime(fileData))
+        name = self.getTargetName()
+        userInfo = self.getUserInfoFromTarget(name)
+        self.printUserInfo(userInfo)
+
