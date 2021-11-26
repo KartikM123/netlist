@@ -14,6 +14,8 @@ def dictToUserInfo(d):
         for trait in file_data["userTraits"]:
             userInfo.traits[trait] = d[trait]
     return userInfo
+def prebuiltTrait(s):
+    return (s == "name") or (s == "priority") or (s == "timeAdded") or (s == "timePinged")
 class UserInfo(object):
     def __init__(self):
         self.name = ""
@@ -22,10 +24,8 @@ class UserInfo(object):
         with open('db/network.json', 'r+') as outfile:
             file_data = json.load(outfile)
             for trait in file_data["userTraits"]:
-                if not self.prebuiltTrait(trait):
+                if not prebuiltTrait(trait):
                     self.traits[trait] = ""
-    def prebuiltTrait(self, s):
-        return (s == "name") or (s == "priority") or (s == "timeAdded") or (s == "timePinged")
     def serialize(self):
         obj = {}
         obj["name"] = self.name

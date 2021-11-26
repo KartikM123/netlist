@@ -1,7 +1,7 @@
 import sys, getopt
 from datetime import datetime
 from commands.ICommand import ICommand, format
-from utils.userInfoUtils import UserInfo, printUserInfo, dictToUserInfo
+from utils.userInfoUtils import UserInfo, printUserInfo, dictToUserInfo, prebuiltTrait
 import json
 
 class AddCommand(ICommand):

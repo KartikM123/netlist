@@ -17,7 +17,7 @@ class ReadCommand(ICommand):
                     return False
             return True
     def getTargetName(self):
-        search = SearchCommand([],[])
+        search = SearchCommand([],[], "name", False)
         return search.execute()
     def getUserInfoFromTarget(self, name):
         with open('db/network.json', 'r+') as outfile:

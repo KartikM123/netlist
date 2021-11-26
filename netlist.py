@@ -34,7 +34,7 @@ def main (argc, argv):
     elif(target == "ping"):
         command = PingCommand(args, opts)
     elif(target == "search"):
-        command = SearchCommand(args, opts)
+        command = SearchCommand(args, opts, "", True)
     else:
         print("No valid command detected. Check out these options! ")
         with open('help.md', 'r') as f:
