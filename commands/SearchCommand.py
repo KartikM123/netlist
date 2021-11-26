@@ -1,15 +1,17 @@
 import sys, getopt
 from datetime import datetime
 from commands.ICommand import ICommand, format
-from utils.userInfoUtils import UserInfo
+from utils.userInfoUtils import UserInfo, prebuiltTrait, printUserInfo, dictToUserInfo
 import pandas as pd 
 import numpy as np
 import json
 
 class SearchCommand(ICommand):
-    def __init__(self, args, opts):
+    def __init__(self, args, opts, trait, terminal):
         self.args = args
         self.opts = opts
+        self.trait = trait
+        self.terminal = terminal #know if to prettyprint result
     def isUniqueName(self, name):
         with open('db/network.json', 'r+') as outfile:
             file_data = json.load(outfile)
@@ -99,33 +101,144 @@ class SearchCommand(ICommand):
             for obj in file_data["network"]:
                 entry = {}
                 entry["name"] = obj["name"]
-                entry["lev"] = self.calcSimilarity(name, obj["name"])
+                entry[self.trait] = obj[self.trait]
+                entry["lev"] = self.calcSimilarity(name, obj[self.trait])
                 similarWords.append(entry)
         return similarWords
+    def searchPriority(self, target):
+        similarWords = []
+        with open('db/network.json', 'r+') as outfile:
+            file_data = json.load(outfile)
+            for obj in file_data["network"]:
+                if obj["priority"] == target:
+                    entry = {}
+                    entry["name"] = obj["name"]
+                    entry[self.trait] = obj[self.trait]
+                    entry["lev"] = ""
+                    similarWords.append(entry)
+        return similarWords
+    def printInfoHelper(self, name):
+        with open('db/network.json', 'r+') as outfile:
+            file_data = json.load(outfile)
+            for obj in file_data["network"]:
+                if obj["name"] == name:
+                    printUserInfo(dictToUserInfo(obj))
+                    return
+        return 
     #user facing
+    def getYorN(self,msg):
+        while (1):
+            pick = raw_input(msg)
+            if (pick == "y"):
+                return True
+            elif (pick == "n"):
+                return False
+            else:
+                print("Please typer either y or n")
     def getSearchResults(self, name):
-        print(name + " was not found, but did you mean any of the following names?")
-        similarWords = self.searchName(name)
-        similarWords.sort(key=lambda x: x["lev"], reverse=False)
-        entryCount = min(len(similarWords), 5) #ony show top 5
-        for i in range (0, entryCount): 
-            print("[" + str(i) + "] " + similarWords[i]["name"] + " : " + str(similarWords[i]["lev"]))
-        entryPicker = int(raw_input("type the entry you desire: "))
-        if (entryPicker >= entryCount or entryCount < 0):
-            print("invalid entry, restarting search process")
+        isUnique = False
+        if self.trait == "name":
+            print(self.trait + " was not found, but did you mean any of the following names?")
+            isUnique = True
+        else:
+            print("Let's look at your options for " + self.trait)
+            if (self.trait == "priority"):
+                isUnique = True
+            else:
+                isUnique = self.getYorN("Would you like to just read info from a single entry? (y/n)")
+        if self.trait == "priority":
+            similarWords = self.searchPriority(name)
+        else:
+            similarWords = self.searchName(name)
+        if len(similarWords) == 0:
+            print("no options found, let's try again")
             return ("", False)
-        return (similarWords[entryPicker]["name"], True)
-    def getTargetName(self):
-        newName = ""
-        newName = raw_input("Enter name of user: ")
-        if (not self.isUniqueName(newName)):
-            return (newName, True)
-        return (newName, False)
+        if (isUnique):
+            similarWords.sort(key=lambda x: x["lev"], reverse=False)
+            entryCount = min(len(similarWords), 5) #ony show top 5
+            for i in range (0, entryCount): 
+                if (self.trait == "name"):
+                    print("[" + str(i) + "] " + similarWords[i]["name"] + " : " + str(similarWords[i]["lev"]))
+                else:
+                    print("[" + str(i) + "] " + similarWords[i]["name"] + " : " +  similarWords[i][self.trait] + " | " + str(similarWords[i]["lev"]))
+            done = False
+            while (not done):
+                entryPicker = raw_input("type the entry you desire: ")
+                done = True
+                if (not entryPicker.isdigit()):
+                    print("invalid entry, please input a digit")
+                    done = False
+            entryPicker = int(entryPicker)
+            if (entryPicker >= entryCount or entryCount < 0):
+                print("invalid entry, restarting search process")
+                return ("", False)
+            if (self.terminal):
+                self.printInfoHelper(similarWords[entryPicker]["name"])
+            return (similarWords[entryPicker]["name"], True)
+        else:
+            for i in range (0, len(similarWords)):
+                print("[" + str(i) + "] " + similarWords[i]["name"] + " : " +  similarWords[i][self.trait] + " | " + str(similarWords[i]["lev"]))
+            anotherSearch = self.getYorN("Would you like see a specific user's info? (y/n)")
+            if (anotherSearch):
+                done = False
+                while (not done):
+                    entryPicker = raw_input("type the entry you desire: ")
+                    done = True
+                    if (not entryPicker.isdigit()):
+                        print("invalid entry, please input a digit")
+                        done = False
+                    entryPicker = int(entryPicker)
+                    if (entryPicker >= len(similarWords) or len(similarWords) < 0):
+                        print("invalid entry, restarting search process")
+                        return ("", False)
+                    if (self.terminal):
+                        self.printInfoHelper(similarWords[entryPicker]["name"])
+            return "done"
+    def getTarget(self):
+        newVal = ""
+        newVal = raw_input("Enter " + self.trait + " of user: ")
+        if self.trait == "name":
+            if (not self.isUniqueName(newVal)):
+                return (newVal, True)
+            return (newVal, False)
+        if self.trait == "priority":
+            if (not newVal.isdigit()):
+                print("Please input a valid priority digit")
+        return (newVal, False)
+    def getOptions(self):
+        print("You can search by any of the following traits")
+        print(" -- name -- ")
+        with open('db/network.json', 'r+') as outfile:
+            file_data = json.load(outfile)
+            for trait in file_data["userTraits"]:
+                print(" -- " + trait + " -- ")
+        print (" -- priority -- ")
+        print (" -- timePinged -- ")
+        print (" -- timeAdded -- ")
+    def isValidOption(self, opt):
+        with open('db/network.json', 'r+') as outfile:
+            file_data = json.load(outfile)
+            for trait in file_data["userTraits"]:
+                if trait == opt:
+                    return True
+        return prebuiltTrait(opt)
+    def getTrait(self):
+        while(1):
+            t = raw_input("Pick a trait to search (type `?` for help): ")
+            if (t == "?"):
+                self.getOptions()
+            elif (self.isValidOption(t)):
+                self.trait = t
+                return
+            else:
+                print("Invalid choice :(")
+        
     def execute(self):
+        if (self.trait == ""):
+            self.getTrait()
         done = False
         while (not done):
-            name, done = self.getTargetName()
+            t, done = self.getTarget()
             if (not done):
-                name, done = self.getSearchResults(name)
-        print("Successfully picked " + name + "!")
-        return name
+                t, done = self.getSearchResults(t)
+        return t
