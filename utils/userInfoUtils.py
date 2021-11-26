@@ -1,4 +1,19 @@
 import json
+def printUserInfo(u):
+    print("name: " + u.name)
+    for trait in u.traits:
+        print(trait + ": " + u.traits[trait])
+    print("priority: " + u.priority)
+    return
+def dictToUserInfo(d):
+    userInfo = UserInfo()
+    userInfo.name = d["name"]
+    userInfo.priority = d["priority"]
+    with open('db/network.json', 'r+') as outfile:
+        file_data = json.load(outfile)
+        for trait in file_data["userTraits"]:
+            userInfo.traits[trait] = d[trait]
+    return userInfo
 class UserInfo(object):
     def __init__(self):
         self.name = ""

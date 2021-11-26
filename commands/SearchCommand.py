@@ -110,7 +110,14 @@ class SearchCommand(ICommand):
         entryCount = min(len(similarWords), 5) #ony show top 5
         for i in range (0, entryCount): 
             print("[" + str(i) + "] " + similarWords[i]["name"] + " : " + str(similarWords[i]["lev"]))
-        entryPicker = int(raw_input("type the entry you desire: "))
+        done = False
+        while (not done):
+            entryPicker = raw_input("type the entry you desire: ")
+            done = True
+            if (not entryPicker.isdigit()):
+                print("invalid entry, please input a digit")
+                done = False
+        entryPicker = int(entryPicker)
         if (entryPicker >= entryCount or entryCount < 0):
             print("invalid entry, restarting search process")
             return ("", False)

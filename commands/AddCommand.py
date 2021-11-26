@@ -1,7 +1,7 @@
 import sys, getopt
 from datetime import datetime
 from commands.ICommand import ICommand, format
-from utils.userInfoUtils import UserInfo
+from utils.userInfoUtils import UserInfo, printUserInfo, dictToUserInfo
 import json
 
 class AddCommand(ICommand):
@@ -51,12 +51,6 @@ class AddCommand(ICommand):
                 print("Please input a valid digit")
         userInfo.priority = userFavor
         return userInfo
-    def printUserInfo(self, userInfo):
-        print("name: " + userInfo.name)
-        for trait in userInfo.traits:
-            print(trait + ": " + userInfo.traits[trait])
-        print("priority: " + userInfo.priority)
-        return
     def saveUserInfo(self, userInfo):
         with open('db/network.json', 'r+') as outfile:
             #serialize our new userInfo object
@@ -72,7 +66,7 @@ class AddCommand(ICommand):
             json.dump(file_data, outfile)
     def execute(self):
         userInfo = self.getUserInfo()
-        self.printUserInfo(userInfo)
+        printUserInfo(userInfo)
         self.saveUserInfo(userInfo)
         print("finished add")
 
