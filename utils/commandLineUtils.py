@@ -1,14 +1,14 @@
 import json
 from utils.userInfoUtils import UserInfo, printUserInfo, dictToUserInfo, prebuiltTrait, readFileData
-import commands
+import commands.DcountCommand
 # utils for special "always search" type cases
 def getResponseWithOptions(msg, trait):
     if (msg == "--dc"):
-        dcount = commands.DcountCommand([], [], trait)
+        dcount = commands.DcountCommand.DcountCommand([], [], trait)
         dcount.execute()
         return True
     elif (msg == "--r"):
-        r = commands.ReadCommand([], [])
+        r = commands.ReadCommand.ReadCommand([], [])
         r.execute()
         return True
     return False

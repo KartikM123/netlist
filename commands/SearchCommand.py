@@ -101,7 +101,7 @@ class SearchCommand(ICommand):
         return similarWords
     def searchTaggedTraits(self, target):
         similarWords = []
-        file_data = utils.readFileData()
+        file_data = utils.userInfoUtils.readFileData()
         for obj in file_data["network"]:
             if obj["priority"] == target:
                 entry = {}
@@ -149,7 +149,7 @@ class SearchCommand(ICommand):
             if (anotherSearch):
                 entryPicker = int(utils.commandLineUtils.getCallbackResponse("Type the entry you desire:", lambda x : (x.isdigit() and int(x) >= 0 and int(x) < entryCount), self.trait))
                 if (self.terminal):
-                    utils.printInfoOfName(similarWords[entryPicker]["name"])
+                    utils.commandLineUtils.printInfoOfName(similarWords[entryPicker]["name"])
             return "done"
     def getTarget(self):
         newVal = ""
