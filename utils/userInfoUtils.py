@@ -1,4 +1,8 @@
 import json
+#globals
+TAGGING_TRAITS = ["priority"] #used to pair lists of items
+ID_TRAITS = ["name"] #used to pin down unique identifiers
+#general util for interacting with userinfo
 def printUserInfo(u):
     print("name: " + u.name)
     for trait in u.traits:
@@ -16,6 +20,7 @@ def dictToUserInfo(d):
     return userInfo
 def prebuiltTrait(s):
     return (s == "name") or (s == "priority") or (s == "timeAdded") or (s == "timePinged")
+#userinfo class intended to be used for control manipulation
 class UserInfo(object):
     def __init__(self):
         self.name = ""

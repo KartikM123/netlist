@@ -9,13 +9,6 @@ class ReadCommand(ICommand):
     def __init__(self, args, opts):
         self.args = args
         self.opts = opts
-    def isUniqueName(self, name):
-        with open('db/network.json', 'r+') as outfile:
-            file_data = json.load(outfile)
-            for obj in file_data["network"]:
-                if (obj["name"] == name):
-                    return False
-            return True
     def getTargetName(self):
         search = SearchCommand([],[], "name", False)
         return search.execute()

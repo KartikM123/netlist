@@ -2,54 +2,19 @@ import sys, getopt
 from datetime import datetime
 from commands.ICommand import ICommand, format
 from utils.userInfoUtils import UserInfo, printUserInfo, dictToUserInfo, prebuiltTrait
+from utils.commandLineUtils import *
 import json
 
 class AddCommand(ICommand):
     def __init__(self, args, opts):
         self.args = args
         self.opts = opts
-    def isUniqueName(self, name):
-        with open('db/network.json', 'r+') as outfile:
-            file_data = json.load(outfile)
-            for obj in file_data["network"]:
-                if (obj["name"] == name):
-                    return False
-            return True
-    def promptUserRetry(self):
-        while (1):
-            pick = raw_input("No option kept, do you want to leave it blank? (y/n)")
-            if (pick == "y"):
-                return True
-            elif (pick == "n"):
-                return False
-            else:
-                print("Please typer either y or n")
-    
-    def promptUserString(self, message):
-        valid = False
-        while (not valid):
-            value = raw_input(message)
-            if (value == ""):
-                valid = self.promptUserRetry()
-            else:
-                valid = True
-        return value
     def getUserInfo(self):
         userInfo = UserInfo()
-        newName = ""
-        while (newName=="" or not self.isUniqueName(newName)):
-            newName = raw_input("Enter name of user: ")
-            if (not self.isUniqueName(newName)):
-                print("please enter a unique username")
-        userInfo.name = newName
+        userInfo.name = getCallbackResponse("Enter name of user: ", lambda x : isUniqueName(x))
         for trait in userInfo.traits:
-            userInfo.traits[trait] = self.promptUserString("Please enter " + trait + " for " + userInfo.name + ": ")
-        userFavor = ""
-        while (not userFavor.isdigit()):
-            userFavor = raw_input("Enter numerical priority of " + userInfo.name + ": ")
-            if (not userFavor.isdigit()):
-                print("Please input a valid digit")
-        userInfo.priority = userFavor
+            userInfo.traits[trait] = getOptionalResponse("Please enter " + trait + " for " + userInfo.name + ": ")
+        userInfo.priority  = getCallbackResponse("Enter numerical priority of " + userInfo.name + ": ", lambda x: x.isdigit())
         return userInfo
     def saveUserInfo(self, userInfo):
         with open('db/network.json', 'r+') as outfile:
