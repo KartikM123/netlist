@@ -1,8 +1,9 @@
 import sys, getopt
 from datetime import datetime
 from commands.ICommand import ICommand, format
-from utils.commandLineUtils import getTrait, readFileData 
-import pandas as pd 
+from utils.commandLineUtils import getTrait
+from utils.userInfoUtils import readFileData
+import pandas as pd
 import numpy as np
 import json
 
@@ -21,6 +22,6 @@ class DcountCommand(ICommand):
     def execute(self):
         if (self.trait == ""):
             self.trait = getTrait()
-        dCount = self.getDCount()
-        print("Unique ids for " + self.trait + " are " + dCount)
+        dCount = ', '.join(self.getDCount())
+        print("Unique ids for " + self.trait + " are [" + str(dCount) + "]")
         return 

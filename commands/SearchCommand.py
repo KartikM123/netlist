@@ -3,7 +3,6 @@ from datetime import datetime
 from commands.ICommand import *
 from utils.userInfoUtils import readFileData, ID_TRAITS, TAGGING_TRAITS
 from utils.commandLineUtils import getCallbackResponse, printInfoOfName,promptUserRetry, getTrait, isUniqueName
-import pandas as pd 
 import numpy as np
 import json
 

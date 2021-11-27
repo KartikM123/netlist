@@ -24,6 +24,13 @@ def main (argc, argv):
         print("error")
         return 1
     target = args[0]
+    if (target == "init"):
+        target = "h"
+        while(not target == "h"):
+            target = raw_input("What command do you want?")
+            if (target == "h"):
+                with open('help.md', 'r') as f:
+                    print(f.read())
     testValidFile()
     command = ListCommand(args, opts)
     if (target == "add"):

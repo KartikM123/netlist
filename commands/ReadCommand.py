@@ -1,8 +1,7 @@
 import sys, getopt
 from datetime import datetime
 from commands.ICommand import ICommand, format
-from utils.userInfoUtils import UserInfo, printUserInfo, dictToUserInfo
-from utils.commandLineUtils import readFileData
+from utils.userInfoUtils import UserInfo, printUserInfo, dictToUserInfo, readFileData
 from commands.SearchCommand import SearchCommand
 import json
 
