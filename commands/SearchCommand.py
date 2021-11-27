@@ -1,8 +1,7 @@
 import sys, getopt
 from datetime import datetime
-from commands.ICommand import ICommand, format
-from utils.userInfoUtils import UserInfo, prebuiltTrait, printUserInfo, dictToUserInfo
-import pandas as pd 
+from commands.ICommand import *
+import utils
 import numpy as np
 import json
 
@@ -12,13 +11,6 @@ class SearchCommand(ICommand):
         self.opts = opts
         self.trait = trait
         self.terminal = terminal #know if to prettyprint result
-    def isUniqueName(self, name):
-        with open('db/network.json', 'r+') as outfile:
-            file_data = json.load(outfile)
-            for obj in file_data["network"]:
-                if (obj["name"] == name):
-                    return False
-            return True
     #naive approach -- similar sequences
     #   Pros: easy to implement, max substring
     #   Cons: runtime, only looks for substring and can naively not compare word length
@@ -96,146 +88,84 @@ class SearchCommand(ICommand):
         return coefficientSimilarity
     def searchName(self, name):
         similarWords = []
-        with open('db/network.json', 'r+') as outfile:
-            file_data = json.load(outfile)
-            for obj in file_data["network"]:
+        file_data = utils.userInfoUtils.readFileData()
+        for obj in file_data["network"]:
+            entry = {}
+            entry["name"] = obj["name"]
+            entry[self.trait] = obj[self.trait]
+            if (obj[self.trait] == ""):
+                entry["lev"] = 0
+            else:
+                entry["lev"] = self.calcSimilarity(name, obj[self.trait])
+            similarWords.append(entry)
+        return similarWords
+    def searchTaggedTraits(self, target):
+        similarWords = []
+        file_data = utils.readFileData()
+        for obj in file_data["network"]:
+            if obj["priority"] == target:
                 entry = {}
                 entry["name"] = obj["name"]
                 entry[self.trait] = obj[self.trait]
-                entry["lev"] = self.calcSimilarity(name, obj[self.trait])
+                entry["lev"] = ""
                 similarWords.append(entry)
         return similarWords
-    def searchPriority(self, target):
-        similarWords = []
-        with open('db/network.json', 'r+') as outfile:
-            file_data = json.load(outfile)
-            for obj in file_data["network"]:
-                if obj["priority"] == target:
-                    entry = {}
-                    entry["name"] = obj["name"]
-                    entry[self.trait] = obj[self.trait]
-                    entry["lev"] = ""
-                    similarWords.append(entry)
-        return similarWords
-    def printInfoHelper(self, name):
-        with open('db/network.json', 'r+') as outfile:
-            file_data = json.load(outfile)
-            for obj in file_data["network"]:
-                if obj["name"] == name:
-                    printUserInfo(dictToUserInfo(obj))
-                    return
-        return 
-    #user facing
-    def getYorN(self,msg):
-        while (1):
-            pick = raw_input(msg)
-            if (pick == "y"):
-                return True
-            elif (pick == "n"):
-                return False
-            else:
-                print("Please typer either y or n")
     def getSearchResults(self, name):
-        isUnique = False
-        if self.trait == "name":
-            print(self.trait + " was not found, but did you mean any of the following names?")
-            isUnique = True
+        if self.trait in utils.userInfoUtils.ID_TRAITS:
+            #case just for special prompt -- this is just for UID
+            print(self.trait + " was not found, but did you mean any of the following?")
+            pinpointSingleItem = True
+        elif (self.trait in utils.userInfoUtils.TAGGING_TRAITS):
+            #tagging traits must be ranked
+            pinpointSingleItem = False
         else:
-            print("Let's look at your options for " + self.trait)
-            if (self.trait == "priority"):
-                isUnique = True
-            else:
-                isUnique = self.getYorN("Would you like to just read info from a single entry? (y/n)")
-        if self.trait == "priority":
-            similarWords = self.searchPriority(name)
+            #add a general case for info and things like that which may be pinpoint or general
+            pinpointSingleItem = utils.commandLineUtils.promptUserRetry("Do you want to read from a list? (default is ranked)")
+        #priority is a sharedID
+        if self.trait in utils.userInfoUtils.TAGGING_TRAITS:
+            similarWords = self.searchTaggedTraits(name)
         else:
             similarWords = self.searchName(name)
+        #edge case for unpopulated dictionaries
         if len(similarWords) == 0:
             print("no options found, let's try again")
             return ("", False)
-        if (isUnique):
+        if (pinpointSingleItem):
             similarWords.sort(key=lambda x: x["lev"], reverse=False)
             entryCount = min(len(similarWords), 5) #ony show top 5
             for i in range (0, entryCount): 
-                if (self.trait == "name"):
+                if (self.trait in utils.userInfoUtils.ID_TRAITS):
                     print("[" + str(i) + "] " + similarWords[i]["name"] + " : " + str(similarWords[i]["lev"]))
                 else:
                     print("[" + str(i) + "] " + similarWords[i]["name"] + " : " +  similarWords[i][self.trait] + " | " + str(similarWords[i]["lev"]))
-            done = False
-            while (not done):
-                entryPicker = raw_input("type the entry you desire: ")
-                done = True
-                if (not entryPicker.isdigit()):
-                    print("invalid entry, please input a digit")
-                    done = False
-            entryPicker = int(entryPicker)
-            if (entryPicker >= entryCount or entryCount < 0):
-                print("invalid entry, restarting search process")
-                return ("", False)
-            if (self.terminal):
-                self.printInfoHelper(similarWords[entryPicker]["name"])
+            entryPicker = int(utils.commandLineUtils.getCallbackResponse("Type the entry you desire:", lambda x : ((x.isdigit()) and int(x) >= 0 and int(x) < entryCount), self.trait))
+            if (self.terminal): #used to differnetiate utility case from general
+                utils.commandLineUtils.printInfoOfName(similarWords[entryPicker]["name"])
             return (similarWords[entryPicker]["name"], True)
         else:
             for i in range (0, len(similarWords)):
                 print("[" + str(i) + "] " + similarWords[i]["name"] + " : " +  similarWords[i][self.trait] + " | " + str(similarWords[i]["lev"]))
-            anotherSearch = self.getYorN("Would you like see a specific user's info? (y/n)")
+            anotherSearch = utils.promptUserRetry("Would you like see a specific user's info? (y/n)")
             if (anotherSearch):
-                done = False
-                while (not done):
-                    entryPicker = raw_input("type the entry you desire: ")
-                    done = True
-                    if (not entryPicker.isdigit()):
-                        print("invalid entry, please input a digit")
-                        done = False
-                    entryPicker = int(entryPicker)
-                    if (entryPicker >= len(similarWords) or len(similarWords) < 0):
-                        print("invalid entry, restarting search process")
-                        return ("", False)
-                    if (self.terminal):
-                        self.printInfoHelper(similarWords[entryPicker]["name"])
+                entryPicker = int(utils.commandLineUtils.getCallbackResponse("Type the entry you desire:", lambda x : (x.isdigit() and int(x) >= 0 and int(x) < entryCount), self.trait))
+                if (self.terminal):
+                    utils.printInfoOfName(similarWords[entryPicker]["name"])
             return "done"
     def getTarget(self):
         newVal = ""
-        newVal = raw_input("Enter " + self.trait + " of user: ")
-        if self.trait == "name":
-            if (not self.isUniqueName(newVal)):
-                return (newVal, True)
-            return (newVal, False)
-        if self.trait == "priority":
-            if (not newVal.isdigit()):
-                print("Please input a valid priority digit")
+        msg = "Enter " + self.trait + " of user: "
+        if (self.trait == "name"):
+            #special case as this is a unique identifier
+            newVal = utils.commandLineUtils.getCallbackResponse(msg, lambda x: x != "", self.trait)
+            return (newVal, not utils.commandLineUtils.isUniqueName(newVal))
+        elif (self.trait == "priority"):
+            newVal =utils.commandLineUtils.getCallbackResponse(msg, lambda x : x.isdigit(), self.trait)
+        else:
+            newVal = utils.commandLineUtils.getCallbackResponse(msg, lambda x : x != "", self.trait)
         return (newVal, False)
-    def getOptions(self):
-        print("You can search by any of the following traits")
-        print(" -- name -- ")
-        with open('db/network.json', 'r+') as outfile:
-            file_data = json.load(outfile)
-            for trait in file_data["userTraits"]:
-                print(" -- " + trait + " -- ")
-        print (" -- priority -- ")
-        print (" -- timePinged -- ")
-        print (" -- timeAdded -- ")
-    def isValidOption(self, opt):
-        with open('db/network.json', 'r+') as outfile:
-            file_data = json.load(outfile)
-            for trait in file_data["userTraits"]:
-                if trait == opt:
-                    return True
-        return prebuiltTrait(opt)
-    def getTrait(self):
-        while(1):
-            t = raw_input("Pick a trait to search (type `?` for help): ")
-            if (t == "?"):
-                self.getOptions()
-            elif (self.isValidOption(t)):
-                self.trait = t
-                return
-            else:
-                print("Invalid choice :(")
-        
     def execute(self):
         if (self.trait == ""):
-            self.getTrait()
+            self.trait = utils.commandLineUtils.getTrait()
         done = False
         while (not done):
             t, done = self.getTarget()
