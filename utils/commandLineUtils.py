@@ -1,6 +1,6 @@
 import json
-from utils.userInfoUtils import UserInfo, printUserInfo, dictToUserInfo, prebuiltTrait, readFileData
-import commands.DcountCommand
+import utils.userInfoUtils
+import commands
 # utils for special "always search" type cases
 def getResponseWithOptions(msg, trait):
     if (msg == "--dc"):
@@ -47,7 +47,7 @@ def promptUserRetry(msg):
 def getOptions():
     print("You can search by any of the following traits")
     print(" -- name -- ")
-    file_data = readFileData()
+    file_data = utils.userInfoUtils.readFileData()
     for trait in file_data["userTraits"]:
         print(" -- " + trait + " -- ")
     print(" -- priority -- ")
@@ -56,11 +56,11 @@ def getOptions():
 
 
 def isValidOption(opt):
-    file_data = readFileData()
+    file_data = utils.userInfoUtils.readFileData()
     for trait in file_data["userTraits"]:
         if trait == opt:
             return True
-    return prebuiltTrait(opt)
+    return utils.userInfoUtils.prebuiltTrait(opt)
 
 
 def getTrait():
@@ -73,10 +73,41 @@ def getTrait():
         else:
             print("Invalid choice :(")
 
+def getListTags(msg):
+    activeTags = utils.userInfoUtils.readFileData()["activeTags"]
+    while(1):
+        t = raw_input(msg + "(split using \",\") [see tags with \"?\"]")
+        if (t == "?"):
+            print("Active tags: " + str(activeTags))
+        else:
+            tags = t.split(",")
+            res = []
+            if (len(tags) == 0):
+                print("Please input some tags")
+            else:
+                for tag in tags:
+                    if (tag in activeTags):
+                        res.append(tag)
+                    else:
+                        addTag = promptUserRetry("This is a new tag. Would you like to add it to the tag dict?")
+                        if (addTag):
+                            addTagToNetwork(tag)
+                        else:
+                            retryTag = promptUserRetry("Do you want to try to replace this with a similar tag?")
+                            if (retryTag):
+                                sc = commands.SearchCommand.SearchCommand([],[], "tags--", False)
+                                res.append(sc.execute())
+                return res
 
 # misc helpers
+def addTagToNetwork(tag):
+    with open('db/network.json', 'r+') as outfile:
+        #serialize our new userInfo object
+        file_data = json.load(outfile)
+        # Join new_data with file_data inside emp_details
+        file_data["activeTags"].append(tag)
 def isUniqueName(name):
-    file_data = readFileData()
+    file_data = utils.userInfoUtils.readFileData()
     for obj in file_data["network"]:
         if (obj["name"] == name):
             return False
@@ -84,8 +115,8 @@ def isUniqueName(name):
 
 
 def printInfoOfName(name):
-    file_data = readFileData()
+    file_data = utils.userInfoUtils.readFileData()
     for obj in file_data["network"]:
         if obj["name"] == name:
-            printUserInfo(dictToUserInfo(obj))
+            utils.userInfoUtils.printUserInfo(utils.userInfoUtils.dictToUserInfo(obj))
             return

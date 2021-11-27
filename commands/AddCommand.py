@@ -1,20 +1,22 @@
 import sys, getopt
 from datetime import datetime
 from commands.ICommand import ICommand, format
-from utils.userInfoUtils import UserInfo, printUserInfo, dictToUserInfo, prebuiltTrait
-from utils.commandLineUtils import getTrait, getCallbackResponse, getOptionalResponse, isUniqueName
+import utils
 import json
 
 class AddCommand(ICommand):
     def __init__(self, args, opts):
         self.args = args
         self.opts = opts
+    def uniqueProxy(self,x):
+        return utils.commandLineUtils.isUniqueName(x)
     def getUserInfo(self):
-        userInfo = UserInfo()
-        userInfo.name = getCallbackResponse("Enter name of user: ", lambda x : isUniqueName(x), "name")
+        userInfo = utils.userInfoUtils.UserInfo()
+        userInfo.name = utils.commandLineUtils.getCallbackResponse("Enter name of user: ", lambda x : self.uniqueProxy(x), "name")
+        userInfo.tags = utils.commandLineUtils.getListTags("Enter tags to associate with user")
         for trait in userInfo.traits:
-            userInfo.traits[trait] = getOptionalResponse("Please enter " + trait + " for " + userInfo.name + ": ", trait)
-        userInfo.priority  = getCallbackResponse("Enter numerical priority of " + userInfo.name + ": ", lambda x: x.isdigit(), "priority")
+            userInfo.traits[trait] = utils.commandLineUtils.getOptionalResponse("Please enter " + trait + " for " + userInfo.name + ": ", trait)
+        userInfo.priority  = utils.commandLineUtils.getCallbackResponse("Enter numerical priority of " + userInfo.name + ": ", lambda x: x.isdigit(), "priority")
         return userInfo
     def saveUserInfo(self, userInfo):
         with open('db/network.json', 'r+') as outfile:
@@ -31,7 +33,7 @@ class AddCommand(ICommand):
             json.dump(file_data, outfile)
     def execute(self):
         userInfo = self.getUserInfo()
-        printUserInfo(userInfo)
+        utils.userInfoUtils.printUserInfo(userInfo)
         self.saveUserInfo(userInfo)
         print("finished add")
 

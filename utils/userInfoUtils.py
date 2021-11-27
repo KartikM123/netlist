@@ -1,6 +1,6 @@
 import json
 #globals
-TAGGING_TRAITS = ["priority"] #used to pair lists of items
+TAGGING_TRAITS = ["priority", "tags", "role"] #used to pair lists of items
 ID_TRAITS = ["name"] #used to pin down unique identifiers
 #general util for interacting with userinfo
 def readFileData():
@@ -29,6 +29,7 @@ class UserInfo(object):
         self.name = ""
         self.priority = 1000
         self.traits = {}
+        self.tags = []
         file_data = readFileData()
         for trait in file_data["userTraits"]:
             if not prebuiltTrait(trait):
@@ -37,6 +38,7 @@ class UserInfo(object):
         obj = {}
         obj["name"] = self.name
         obj["priority"] = self.priority
+        obj["tags"] = self.tags
         for trait in self.traits:
             obj[trait] = self.traits[trait]
         return obj

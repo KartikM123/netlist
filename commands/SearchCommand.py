@@ -99,6 +99,18 @@ class SearchCommand(ICommand):
                 entry["lev"] = self.calcSimilarity(name, obj[self.trait])
             similarWords.append(entry)
         return similarWords
+    def searchSimilartags(self, target): #niche case when adding tags
+        similarTags = []
+        file_data = utils.userInfoUtils.readFileData()
+        for tagName in file_data["activeTags"]:
+            entry = {}
+            entry["name"] = tagName
+            if (tagName == ""):
+                entry["lev"] = 0
+            else:
+                entry["lev"] = self.calcSimilarity(target, tagName)
+            similarTags.append(entry)
+        return similarTags
     def searchTaggedTraits(self, target):
         similarWords = []
         file_data = utils.userInfoUtils.readFileData()
@@ -118,12 +130,16 @@ class SearchCommand(ICommand):
         elif (self.trait in utils.userInfoUtils.TAGGING_TRAITS):
             #tagging traits must be ranked
             pinpointSingleItem = False
+        elif (self.trait == "tags--"):
+            pinpointSingleItem = True
         else:
             #add a general case for info and things like that which may be pinpoint or general
             pinpointSingleItem = utils.commandLineUtils.promptUserRetry("Do you want to read from a list? (default is ranked)")
         #priority is a sharedID
         if self.trait in utils.userInfoUtils.TAGGING_TRAITS:
             similarWords = self.searchTaggedTraits(name)
+        elif self.trait == "tags--":
+            similarWords = self.searchSimilartags(name)
         else:
             similarWords = self.searchName(name)
         #edge case for unpopulated dictionaries
