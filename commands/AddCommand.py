@@ -2,7 +2,7 @@ import sys, getopt
 from datetime import datetime
 from commands.ICommand import ICommand, format
 from utils.userInfoUtils import UserInfo, printUserInfo, dictToUserInfo, prebuiltTrait
-from utils.commandLineUtils import *
+from utils.commandLineUtils import getTrait, getCallbackResponse, getOptionalResponse, isUniqueName
 import json
 
 class AddCommand(ICommand):
@@ -11,10 +11,10 @@ class AddCommand(ICommand):
         self.opts = opts
     def getUserInfo(self):
         userInfo = UserInfo()
-        userInfo.name = getCallbackResponse("Enter name of user: ", lambda x : isUniqueName(x))
+        userInfo.name = getCallbackResponse("Enter name of user: ", lambda x : isUniqueName(x), "name")
         for trait in userInfo.traits:
-            userInfo.traits[trait] = getOptionalResponse("Please enter " + trait + " for " + userInfo.name + ": ")
-        userInfo.priority  = getCallbackResponse("Enter numerical priority of " + userInfo.name + ": ", lambda x: x.isdigit())
+            userInfo.traits[trait] = getOptionalResponse("Please enter " + trait + " for " + userInfo.name + ": ", trait)
+        userInfo.priority  = getCallbackResponse("Enter numerical priority of " + userInfo.name + ": ", lambda x: x.isdigit(), "priority")
         return userInfo
     def saveUserInfo(self, userInfo):
         with open('db/network.json', 'r+') as outfile:

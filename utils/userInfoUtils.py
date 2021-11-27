@@ -1,9 +1,12 @@
 import json
-from commandLineUtils import readFileData
 #globals
 TAGGING_TRAITS = ["priority"] #used to pair lists of items
 ID_TRAITS = ["name"] #used to pin down unique identifiers
 #general util for interacting with userinfo
+def readFileData():
+    with open('db/network.json', 'r+') as outfile:
+        file_data = json.load(outfile)
+        return file_data
 def printUserInfo(u):
     print("name: " + u.name)
     for trait in u.traits:
@@ -26,7 +29,7 @@ class UserInfo(object):
         self.name = ""
         self.priority = 1000
         self.traits = {}
-        file_data = json.load(outfile)
+        file_data = readFileData()
         for trait in file_data["userTraits"]:
             if not prebuiltTrait(trait):
                 self.traits[trait] = ""

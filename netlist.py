@@ -4,6 +4,7 @@ from commands.ListCommand import ListCommand
 from commands.ReadCommand import ReadCommand
 from commands.PingCommand import PingCommand
 from commands.SearchCommand import SearchCommand
+from commands.DcountCommand import DcountCommand
 import shutil
 import json
 def testValidFile():
@@ -36,7 +37,7 @@ def main (argc, argv):
     elif(target == "search"):
         command = SearchCommand(args, opts, "", True)
     elif(target == "dcount"):
-        command = DcountCommand(args, opts)
+        command = DcountCommand(args, opts, "")
     else:
         print("No valid command detected. Check out these options! ")
         with open('help.md', 'r') as f:

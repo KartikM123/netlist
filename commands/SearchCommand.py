@@ -1,8 +1,8 @@
 import sys, getopt
 from datetime import datetime
 from commands.ICommand import *
-from utils.userInfoUtils import UserInfo, prebuiltTrait, printUserInfo, dictToUserInfo
-from utils.commandLineUtils import *
+from utils.userInfoUtils import readFileData, ID_TRAITS, TAGGING_TRAITS
+from utils.commandLineUtils import getCallbackResponse, printInfoOfName,promptUserRetry, getTrait, isUniqueName
 import pandas as pd 
 import numpy as np
 import json
@@ -138,7 +138,7 @@ class SearchCommand(ICommand):
                 else:
                     print("[" + str(i) + "] " + similarWords[i]["name"] + " : " +  similarWords[i][self.trait] + " | " + str(similarWords[i]["lev"]))
             done = False
-            entryPicker = int(getCallbackResponse("Type the entry you desire:", lambda x : ((x.isdigit()) and int(x) >= 0 and int(x) < entryCount)))
+            entryPicker = int(getCallbackResponse("Type the entry you desire:", lambda x : ((x.isdigit()) and int(x) >= 0 and int(x) < entryCount), self.trait))
             if (self.terminal): #used to differnetiate utility case from general
                 printInfoOfName(similarWords[entryPicker]["name"])
             return (similarWords[entryPicker]["name"], True)
@@ -147,7 +147,7 @@ class SearchCommand(ICommand):
                 print("[" + str(i) + "] " + similarWords[i]["name"] + " : " +  similarWords[i][self.trait] + " | " + str(similarWords[i]["lev"]))
             anotherSearch = promptUserRetry("Would you like see a specific user's info? (y/n)")
             if (anotherSearch):
-                entryPicker = int(getCallbackResponse("Type the entry you desire:", lambda x : (x.isdigit() and int(x) >= 0 and int(x) < entryCount)))
+                entryPicker = int(getCallbackResponse("Type the entry you desire:", lambda x : (x.isdigit() and int(x) >= 0 and int(x) < entryCount), self.trait))
                 if (self.terminal):
                     printInfoOfName(similarWords[entryPicker]["name"])
             return "done"
@@ -156,12 +156,12 @@ class SearchCommand(ICommand):
         msg = "Enter " + self.trait + " of user: "
         if (self.trait == "name"):
             #special case as this is a unique identifier
-            newVal = getCallbackResponse(msg, lambda x: x != "")
+            newVal = getCallbackResponse(msg, lambda x: x != "", self.trait)
             return (newVal, not isUniqueName(newVal))
         elif (self.trait == "priority"):
-            newVal = getCallbackResponse(msg, lambda x : x.isdigit())
+            newVal = getCallbackResponse(msg, lambda x : x.isdigit(), self.trait)
         else:
-            newVal = getCallbackResponse(msg, lambda x : x != "")
+            newVal = getCallbackResponse(msg, lambda x : x != "", self.trait)
         return (newVal, False)
     def execute(self):
         if (self.trait == ""):

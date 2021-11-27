@@ -1,19 +1,38 @@
 import json
-from userInfoUtils import prebuiltTrait
+from utils.userInfoUtils import UserInfo, printUserInfo, dictToUserInfo, prebuiltTrait
+from commands.DcountCommand import DcountCommand
+from commands.ReadCommand import ReadCommand
+#utils for special "always search" type cases
+def getResponseWithOptions(msg, trait):
+    if (msg == "--dc"):
+        dcount = DcountCommand([],[], trait)
+        dcount.execute()
+        return True
+    elif (msg == "--r"):
+        r = ReadCommand([],[])
+        r.execute()
+        return True
+    return False
 #utils for getting generic input 
-def getOptionalResponse(msg):
-    res = raw_input(msg)
-    return res
-def getCallbackResponse(msg, callbackCheck):
+def getOptionalResponse(msg, trait):
     while(1):
         res = raw_input(msg)
-        if (callbackCheck(res) == True):
-            print("worked")
+        if (getResponseWithOptions(msg, trait)):
+            print("Now returning to original query")
+        else:
             return res
-        print("Please input a valid value")
+def getCallbackResponse(msg, callbackCheck, trait):
+    while(1):
+        res = raw_input(msg)
+        if (getResponseWithOptions(res, trait)):
+            print("Now returning to original query")
+        elif (callbackCheck(res) == True):
+            return res
+        else:
+            print("Please input a valid value")
 #utils for generic but common use cases
 def promptUserRetry(msg):
-    getCallbackResponse(msg +  "(y/n)",  lambda msg: ((msg == "y") or (msg == "n")))
+    getCallbackResponse(msg +  "(y/n)",  lambda msg: ((msg == "y") or (msg == "n")), "")
     while (1):
         pick = raw_input(msg +  "(y/n)")
         if (pick == "y"):
