@@ -37,16 +37,11 @@ def getCallbackResponse(msg, callbackCheck, trait):
 
 # utils for generic but common use cases
 def promptUserRetry(msg):
-    getCallbackResponse(msg + "(y/n)", lambda msg: ((msg == "y") or (msg == "n")), "")
-    while (1):
-        pick = raw_input(msg + "(y/n)")
-        if (pick == "y"):
-            return True
-        elif (pick == "n"):
-            return False
-        else:
-            print("Please typer either y or n")
-
+    pick = getCallbackResponse(msg + "(y/n)", lambda msg: ((msg == "y") or (msg == "n")), "")
+    if (pick == "y"):
+        return True
+    elif (pick == "n"):
+        return False
 
 # utils for managing dynamic traits
 def getOptions():

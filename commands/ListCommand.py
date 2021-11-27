@@ -1,7 +1,7 @@
 from commands.ICommand import ICommand, format
 import json
 from datetime import datetime
-from utils.commandLineUtils import readFileData
+import utils
 class ListCommand(ICommand):
     def __init__(self, args, opts):
         pass
@@ -20,6 +20,6 @@ class ListCommand(ICommand):
         for obj in data:
             print(obj["name"] + " : " +  obj["timeSinceLastPinged"])
     def execute(self):
-        fileData = readFileData()["network"]
+        fileData = utils.userInfoUtils.readFileData()["network"]
         fileData = self.calcTimeSincePinged(fileData)
         self.prettyPrint(self.sortTime(fileData))
