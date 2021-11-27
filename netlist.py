@@ -26,7 +26,7 @@ def main (argc, argv):
     target = args[0]
     if (target == "init"):
         target = "h"
-        while(not target == "h"):
+        while(target == "h"):
             target = raw_input("What command do you want?")
             if (target == "h"):
                 with open('help.md', 'r') as f:
