@@ -1,5 +1,5 @@
 import json
-from utils.userInfoUtils import *
+from userInfoUtils import prebuiltTrait
 #utils for getting generic input 
 def getOptionalResponse(msg):
     res = raw_input(msg)
@@ -26,19 +26,17 @@ def promptUserRetry(msg):
 def getOptions():
     print("You can search by any of the following traits")
     print(" -- name -- ")
-    with open('db/network.json', 'r+') as outfile:
-        file_data = json.load(outfile)
-        for trait in file_data["userTraits"]:
-            print(" -- " + trait + " -- ")
+    file_data = readFileData()
+    for trait in file_data["userTraits"]:
+        print(" -- " + trait + " -- ")
     print (" -- priority -- ")
     print (" -- timePinged -- ")
     print (" -- timeAdded -- ")
 def isValidOption(opt):
-    with open('db/network.json', 'r+') as outfile:
-        file_data = json.load(outfile)
-        for trait in file_data["userTraits"]:
-            if trait == opt:
-                return True
+    file_data = readFileData()
+    for trait in file_data["userTraits"]:
+        if trait == opt:
+            return True
     return prebuiltTrait(opt)
 def getTrait():
     while(1):
@@ -51,17 +49,18 @@ def getTrait():
             print("Invalid choice :(")
 #misc helpers
 def isUniqueName(name):
-    with open('db/network.json', 'r+') as outfile:
-        file_data = json.load(outfile)
-        for obj in file_data["network"]:
-            if (obj["name"] == name):
-                return False
-        return True
+    file_data = readFileData()
+    for obj in file_data["network"]:
+        if (obj["name"] == name):
+            return False
+    return True
 def printInfoOfName(name):
+    file_data = readFileData()
+    for obj in file_data["network"]:
+        if obj["name"] == name:
+            printUserInfo(dictToUserInfo(obj))
+            return
+def readFileData():
     with open('db/network.json', 'r+') as outfile:
         file_data = json.load(outfile)
-        for obj in file_data["network"]:
-            if obj["name"] == name:
-                printUserInfo(dictToUserInfo(obj))
-                return
-    return 
+        return file_data

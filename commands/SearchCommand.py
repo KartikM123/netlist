@@ -90,26 +90,24 @@ class SearchCommand(ICommand):
         return coefficientSimilarity
     def searchName(self, name):
         similarWords = []
-        with open('db/network.json', 'r+') as outfile:
-            file_data = json.load(outfile)
-            for obj in file_data["network"]:
-                entry = {}
-                entry["name"] = obj["name"]
-                entry[self.trait] = obj[self.trait]
-                entry["lev"] = self.calcSimilarity(name, obj[self.trait])
-                similarWords.append(entry)
+        file_data = readFileData()
+        for obj in file_data["network"]:
+            entry = {}
+            entry["name"] = obj["name"]
+            entry[self.trait] = obj[self.trait]
+            entry["lev"] = self.calcSimilarity(name, obj[self.trait])
+            similarWords.append(entry)
         return similarWords
     def searchTaggedTraits(self, target):
         similarWords = []
-        with open('db/network.json', 'r+') as outfile:
-            file_data = json.load(outfile)
-            for obj in file_data["network"]:
-                if obj["priority"] == target:
-                    entry = {}
-                    entry["name"] = obj["name"]
-                    entry[self.trait] = obj[self.trait]
-                    entry["lev"] = ""
-                    similarWords.append(entry)
+        file_data = readFileData()
+        for obj in file_data["network"]:
+            if obj["priority"] == target:
+                entry = {}
+                entry["name"] = obj["name"]
+                entry[self.trait] = obj[self.trait]
+                entry["lev"] = ""
+                similarWords.append(entry)
         return similarWords
     def getSearchResults(self, name):
         if self.trait in ID_TRAITS:

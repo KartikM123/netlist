@@ -1,4 +1,5 @@
 import json
+from commandLineUtils import readFileData
 #globals
 TAGGING_TRAITS = ["priority"] #used to pair lists of items
 ID_TRAITS = ["name"] #used to pin down unique identifiers
@@ -13,10 +14,9 @@ def dictToUserInfo(d):
     userInfo = UserInfo()
     userInfo.name = d["name"]
     userInfo.priority = d["priority"]
-    with open('db/network.json', 'r+') as outfile:
-        file_data = json.load(outfile)
-        for trait in file_data["userTraits"]:
-            userInfo.traits[trait] = d[trait]
+    file_data = readFileData()
+    for trait in file_data["userTraits"]:
+        userInfo.traits[trait] = d[trait]
     return userInfo
 def prebuiltTrait(s):
     return (s == "name") or (s == "priority") or (s == "timeAdded") or (s == "timePinged")
@@ -26,11 +26,10 @@ class UserInfo(object):
         self.name = ""
         self.priority = 1000
         self.traits = {}
-        with open('db/network.json', 'r+') as outfile:
-            file_data = json.load(outfile)
-            for trait in file_data["userTraits"]:
-                if not prebuiltTrait(trait):
-                    self.traits[trait] = ""
+        file_data = json.load(outfile)
+        for trait in file_data["userTraits"]:
+            if not prebuiltTrait(trait):
+                self.traits[trait] = ""
     def serialize(self):
         obj = {}
         obj["name"] = self.name

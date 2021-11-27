@@ -35,6 +35,8 @@ def main (argc, argv):
         command = PingCommand(args, opts)
     elif(target == "search"):
         command = SearchCommand(args, opts, "", True)
+    elif(target == "dcount"):
+        command = DcountCommand(args, opts)
     else:
         print("No valid command detected. Check out these options! ")
         with open('help.md', 'r') as f:
