@@ -11,7 +11,7 @@ class PingCommand(ICommand):
         self.opts = opts
     def getTargetName(self):
         newName = ""
-        search = SearchCommand([],[], "name", False)
+        search = SearchCommand([],[], "name", False, "")
         return search.execute()
     def pingUser(self, name):
         with open('db/network.json', 'r+') as outfile:

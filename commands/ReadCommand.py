@@ -10,7 +10,7 @@ class ReadCommand(ICommand):
         self.args = args
         self.opts = opts
     def getTargetName(self):
-        search = SearchCommand([],[], "name", False)
+        search = SearchCommand([],[], "name", False, "")
         return search.execute()
     def getUserInfoFromTarget(self, name):
         file_data = readFileData()

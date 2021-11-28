@@ -11,7 +11,8 @@ def testValidFile():
     with open('db/network.json', 'r+') as outfile:
         #load fileData
         try:
-            json.load(outfile)
+            file_data = json.load(outfile)
+            file_data["network"]
         except:
             shutil.copy('db/template.json','db/network.json')
 def main (argc, argv):
@@ -42,7 +43,7 @@ def main (argc, argv):
     elif(target == "ping"):
         command = PingCommand(args, opts)
     elif(target == "search"):
-        command = SearchCommand(args, opts, "", True)
+        command = SearchCommand(args, opts, "", True, "")
     elif(target == "dcount"):
         command = DcountCommand(args, opts, "")
     else:
