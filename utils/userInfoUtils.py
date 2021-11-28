@@ -22,7 +22,8 @@ def dictToUserInfo(d):
         userInfo.traits[trait] = d[trait]
     return userInfo
 def prebuiltTrait(s):
-    return (s == "name") or (s == "priority") or (s == "timeAdded") or (s == "timePinged")
+    prebuilt = ["name", "priority", "timeAdded", "timePinged", "tags"]
+    return s in prebuilt
 #userinfo class intended to be used for control manipulation
 class UserInfo(object):
     def __init__(self):

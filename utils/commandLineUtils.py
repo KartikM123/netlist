@@ -1,4 +1,5 @@
 import json
+import sys
 import utils.userInfoUtils
 import commands
 # utils for special "always search" type cases
@@ -11,6 +12,8 @@ def getResponseWithOptions(msg, trait):
         r = commands.ReadCommand.ReadCommand([], [])
         r.execute()
         return True
+    elif (msg == "--exit"):
+        sys.exit()
     return False
 
 
@@ -50,6 +53,7 @@ def getOptions():
     file_data = utils.userInfoUtils.readFileData()
     for trait in file_data["userTraits"]:
         print(" -- " + trait + " -- ")
+    print(" -- tags -- ")
     print(" -- priority -- ")
     print(" -- timePinged -- ")
     print(" -- timeAdded -- ")
@@ -86,17 +90,20 @@ def getListTags(msg):
                 print("Please input some tags")
             else:
                 for tag in tags:
+                    tag = tag.lstrip()
                     if (tag in activeTags):
                         res.append(tag)
                     else:
-                        addTag = promptUserRetry("This is a new tag. Would you like to add it to the tag dict?")
+                        addTag = promptUserRetry(tag + " is a new tag. Would you like to add it to the tag dict?")
                         if (addTag):
                             addTagToNetwork(tag)
+                            res.append(tag)
                         else:
                             retryTag = promptUserRetry("Do you want to try to replace this with a similar tag?")
                             if (retryTag):
-                                sc = commands.SearchCommand.SearchCommand([],[], "tags--", False)
+                                sc = commands.SearchCommand.SearchCommand([],[], "tags--", False, tag)
                                 res.append(sc.execute())
+                res = list(dict.fromkeys(res)) #remove duplicates
                 return res
 
 # misc helpers
@@ -106,6 +113,10 @@ def addTagToNetwork(tag):
         file_data = json.load(outfile)
         # Join new_data with file_data inside emp_details
         file_data["activeTags"].append(tag)
+        #reset seek so it will overwrite at base index
+        outfile.seek(0)
+        # convert back to json.
+        json.dump(file_data, outfile)
 def isUniqueName(name):
     file_data = utils.userInfoUtils.readFileData()
     for obj in file_data["network"]:

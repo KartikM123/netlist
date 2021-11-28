@@ -6,11 +6,12 @@ import numpy as np
 import json
 
 class SearchCommand(ICommand):
-    def __init__(self, args, opts, trait, terminal):
+    def __init__(self, args, opts, trait, terminal, searchQuery):
         self.args = args
         self.opts = opts
         self.trait = trait
         self.terminal = terminal #know if to prettyprint result
+        self.searchQuery = searchQuery
     #naive approach -- similar sequences
     #   Pros: easy to implement, max substring
     #   Cons: runtime, only looks for substring and can naively not compare word length
@@ -115,10 +116,10 @@ class SearchCommand(ICommand):
         similarWords = []
         file_data = utils.userInfoUtils.readFileData()
         for obj in file_data["network"]:
-            if obj["priority"] == target:
+            if (obj[self.trait] == target) or ((self.trait == "tags") and (target in obj["tags"])):
                 entry = {}
                 entry["name"] = obj["name"]
-                entry[self.trait] = obj[self.trait]
+                entry[self.trait] = target
                 entry["lev"] = ""
                 similarWords.append(entry)
         return similarWords
@@ -150,7 +151,7 @@ class SearchCommand(ICommand):
             similarWords.sort(key=lambda x: x["lev"], reverse=False)
             entryCount = min(len(similarWords), 5) #ony show top 5
             for i in range (0, entryCount): 
-                if (self.trait in utils.userInfoUtils.ID_TRAITS):
+                if (self.trait in utils.userInfoUtils.ID_TRAITS or self.trait == "tags--"):
                     print("[" + str(i) + "] " + similarWords[i]["name"] + " : " + str(similarWords[i]["lev"]))
                 else:
                     print("[" + str(i) + "] " + similarWords[i]["name"] + " : " +  similarWords[i][self.trait] + " | " + str(similarWords[i]["lev"]))
@@ -159,25 +160,29 @@ class SearchCommand(ICommand):
                 utils.commandLineUtils.printInfoOfName(similarWords[entryPicker]["name"])
             return (similarWords[entryPicker]["name"], True)
         else:
+            entryCount = len(similarWords)
             for i in range (0, len(similarWords)):
                 print("[" + str(i) + "] " + similarWords[i]["name"] + " : " +  similarWords[i][self.trait] + " | " + str(similarWords[i]["lev"]))
-            anotherSearch = utils.promptUserRetry("Would you like see a specific user's info? (y/n)")
+            anotherSearch = utils.commandLineUtils.promptUserRetry("Would you like see a specific user's info?")
             if (anotherSearch):
                 entryPicker = int(utils.commandLineUtils.getCallbackResponse("Type the entry you desire:", lambda x : (x.isdigit() and int(x) >= 0 and int(x) < entryCount), self.trait))
                 if (self.terminal):
                     utils.commandLineUtils.printInfoOfName(similarWords[entryPicker]["name"])
-            return "done"
+            return "done", True
     def getTarget(self):
-        newVal = ""
+        newVal = self.searchQuery
         msg = "Enter " + self.trait + " of user: "
         if (self.trait == "name"):
             #special case as this is a unique identifier
-            newVal = utils.commandLineUtils.getCallbackResponse(msg, lambda x: x != "", self.trait)
+            if (self.searchQuery == ""):
+                newVal = utils.commandLineUtils.getCallbackResponse(msg, lambda x: x != "", self.trait)
             return (newVal, not utils.commandLineUtils.isUniqueName(newVal))
         elif (self.trait == "priority"):
-            newVal =utils.commandLineUtils.getCallbackResponse(msg, lambda x : x.isdigit(), self.trait)
+            if (self.searchQuery == ""):
+                newVal =utils.commandLineUtils.getCallbackResponse(msg, lambda x : x.isdigit(), self.trait)
         else:
-            newVal = utils.commandLineUtils.getCallbackResponse(msg, lambda x : x != "", self.trait)
+            if (self.searchQuery == ""):
+                newVal = utils.commandLineUtils.getCallbackResponse(msg, lambda x : x != "", self.trait)
         return (newVal, False)
     def execute(self):
         if (self.trait == ""):
