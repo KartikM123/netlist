@@ -10,7 +10,7 @@ recommendations:
 - embrace the tag and organize feature to it's max
 - explore how to configure the template.json to add in your own custom configurations
 
-##key workflows
+## key workflows
 run `netlist add` to add a user to your network. You will be prompted for paramters pulled from `db/template.json` and some mandatory params. Will automatically store `timePinged` to track how long since you interacted with this user
 run `netlist read` to read any user's information
 run `netlist ping` to ping a user and reset their `timePinged` variable
