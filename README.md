@@ -1,6 +1,6 @@
 # netlist 
 ## v.0.0 - 11/28
-netlist, a tag based network cli app.
+netlist, a tag based network cli app. python regret
 
 this app allows you to set tags for individuals, store information for them, and then read that information at scale. It's a great organizing tool that measures how long it's bene since you last talked with someoneone.
 
