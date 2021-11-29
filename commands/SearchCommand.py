@@ -180,6 +180,10 @@ class SearchCommand(ICommand):
         elif (self.trait == "priority"):
             if (self.searchQuery == ""):
                 newVal =utils.commandLineUtils.getCallbackResponse(msg, lambda x : x.isdigit(), self.trait)
+        elif (self.trait == "tags--"):
+            activeTags = utils.userInfoUtils.readFileData()["activeTags"]
+            newVal = utils.commandLineUtils.getCallbackResponse(msg, lambda x : x in activeTags, "tags")
+            return newVal, newVal in activeTags
         else:
             if (self.searchQuery == ""):
                 newVal = utils.commandLineUtils.getCallbackResponse(msg, lambda x : x != "", self.trait)
