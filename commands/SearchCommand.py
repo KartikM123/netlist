@@ -6,11 +6,12 @@ import numpy as np
 import json
 
 class SearchCommand(ICommand):
-    def __init__(self, args, opts, trait, terminal):
+    def __init__(self, args, opts, trait, terminal, searchQuery):
         self.args = args
         self.opts = opts
         self.trait = trait
         self.terminal = terminal #know if to prettyprint result
+        self.searchQuery = searchQuery
     #naive approach -- similar sequences
     #   Pros: easy to implement, max substring
     #   Cons: runtime, only looks for substring and can naively not compare word length
@@ -99,14 +100,26 @@ class SearchCommand(ICommand):
                 entry["lev"] = self.calcSimilarity(name, obj[self.trait])
             similarWords.append(entry)
         return similarWords
+    def searchSimilartags(self, target): #niche case when adding tags
+        similarTags = []
+        file_data = utils.userInfoUtils.readFileData()
+        for tagName in file_data["activeTags"]:
+            entry = {}
+            entry["name"] = tagName
+            if (tagName == ""):
+                entry["lev"] = 0
+            else:
+                entry["lev"] = self.calcSimilarity(target, tagName)
+            similarTags.append(entry)
+        return similarTags
     def searchTaggedTraits(self, target):
         similarWords = []
         file_data = utils.userInfoUtils.readFileData()
         for obj in file_data["network"]:
-            if obj["priority"] == target:
+            if (obj[self.trait] == target) or ((self.trait == "tags") and (target in obj["tags"])):
                 entry = {}
                 entry["name"] = obj["name"]
-                entry[self.trait] = obj[self.trait]
+                entry[self.trait] = target
                 entry["lev"] = ""
                 similarWords.append(entry)
         return similarWords
@@ -118,12 +131,16 @@ class SearchCommand(ICommand):
         elif (self.trait in utils.userInfoUtils.TAGGING_TRAITS):
             #tagging traits must be ranked
             pinpointSingleItem = False
+        elif (self.trait == "tags--"):
+            pinpointSingleItem = True
         else:
             #add a general case for info and things like that which may be pinpoint or general
             pinpointSingleItem = utils.commandLineUtils.promptUserRetry("Do you want to read from a list? (default is ranked)")
         #priority is a sharedID
         if self.trait in utils.userInfoUtils.TAGGING_TRAITS:
             similarWords = self.searchTaggedTraits(name)
+        elif self.trait == "tags--":
+            similarWords = self.searchSimilartags(name)
         else:
             similarWords = self.searchName(name)
         #edge case for unpopulated dictionaries
@@ -134,7 +151,7 @@ class SearchCommand(ICommand):
             similarWords.sort(key=lambda x: x["lev"], reverse=False)
             entryCount = min(len(similarWords), 5) #ony show top 5
             for i in range (0, entryCount): 
-                if (self.trait in utils.userInfoUtils.ID_TRAITS):
+                if (self.trait in utils.userInfoUtils.ID_TRAITS or self.trait == "tags--"):
                     print("[" + str(i) + "] " + similarWords[i]["name"] + " : " + str(similarWords[i]["lev"]))
                 else:
                     print("[" + str(i) + "] " + similarWords[i]["name"] + " : " +  similarWords[i][self.trait] + " | " + str(similarWords[i]["lev"]))
@@ -143,25 +160,33 @@ class SearchCommand(ICommand):
                 utils.commandLineUtils.printInfoOfName(similarWords[entryPicker]["name"])
             return (similarWords[entryPicker]["name"], True)
         else:
+            entryCount = len(similarWords)
             for i in range (0, len(similarWords)):
                 print("[" + str(i) + "] " + similarWords[i]["name"] + " : " +  similarWords[i][self.trait] + " | " + str(similarWords[i]["lev"]))
-            anotherSearch = utils.promptUserRetry("Would you like see a specific user's info? (y/n)")
+            anotherSearch = utils.commandLineUtils.promptUserRetry("Would you like see a specific user's info?")
             if (anotherSearch):
                 entryPicker = int(utils.commandLineUtils.getCallbackResponse("Type the entry you desire:", lambda x : (x.isdigit() and int(x) >= 0 and int(x) < entryCount), self.trait))
                 if (self.terminal):
                     utils.commandLineUtils.printInfoOfName(similarWords[entryPicker]["name"])
-            return "done"
+            return "done", True
     def getTarget(self):
-        newVal = ""
+        newVal = self.searchQuery
         msg = "Enter " + self.trait + " of user: "
         if (self.trait == "name"):
             #special case as this is a unique identifier
-            newVal = utils.commandLineUtils.getCallbackResponse(msg, lambda x: x != "", self.trait)
+            if (self.searchQuery == ""):
+                newVal = utils.commandLineUtils.getCallbackResponse(msg, lambda x: x != "", self.trait)
             return (newVal, not utils.commandLineUtils.isUniqueName(newVal))
         elif (self.trait == "priority"):
-            newVal =utils.commandLineUtils.getCallbackResponse(msg, lambda x : x.isdigit(), self.trait)
+            if (self.searchQuery == ""):
+                newVal =utils.commandLineUtils.getCallbackResponse(msg, lambda x : x.isdigit(), self.trait)
+        elif (self.trait == "tags--"):
+            activeTags = utils.userInfoUtils.readFileData()["activeTags"]
+            newVal = utils.commandLineUtils.getCallbackResponse(msg, lambda x : x in activeTags, "tags")
+            return newVal, newVal in activeTags
         else:
-            newVal = utils.commandLineUtils.getCallbackResponse(msg, lambda x : x != "", self.trait)
+            if (self.searchQuery == ""):
+                newVal = utils.commandLineUtils.getCallbackResponse(msg, lambda x : x != "", self.trait)
         return (newVal, False)
     def execute(self):
         if (self.trait == ""):

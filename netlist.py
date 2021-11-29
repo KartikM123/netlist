@@ -5,13 +5,15 @@ from commands.ReadCommand import ReadCommand
 from commands.PingCommand import PingCommand
 from commands.SearchCommand import SearchCommand
 from commands.DcountCommand import DcountCommand
+from commands.SummarizeCommand import SummarizeCommand
 import shutil
 import json
 def testValidFile():
     with open('db/network.json', 'r+') as outfile:
         #load fileData
         try:
-            json.load(outfile)
+            file_data = json.load(outfile)
+            file_data["network"]
         except:
             shutil.copy('db/template.json','db/network.json')
 def main (argc, argv):
@@ -32,19 +34,21 @@ def main (argc, argv):
                 with open('help.md', 'r') as f:
                     print(f.read())
     testValidFile()
-    command = ListCommand(args, opts)
+    command = ListCommand(args, opts, "")
     if (target == "add"):
         command = AddCommand(args, opts)
     elif(target == "list"):
-        command = ListCommand(args, opts)
+        command = ListCommand(args, opts, "")
     elif(target == "read"):
         command = ReadCommand(args, opts)
     elif(target == "ping"):
         command = PingCommand(args, opts)
     elif(target == "search"):
-        command = SearchCommand(args, opts, "", True)
+        command = SearchCommand(args, opts, "", True, "")
     elif(target == "dcount"):
         command = DcountCommand(args, opts, "")
+    elif(target == "summary"):
+        command = SummarizeCommand(args,opts)
     else:
         print("No valid command detected. Check out these options! ")
         with open('help.md', 'r') as f:
