@@ -13,6 +13,8 @@ def printUserInfo(u):
         print(trait + ": " + u.traits[trait])
     print("priority: " + u.priority)
     return
+def simplePrintUserInfo(u):
+    print(u["name"] + " | " + u["timePinged"])
 def dictToUserInfo(d):
     userInfo = UserInfo()
     userInfo.name = d["name"]
